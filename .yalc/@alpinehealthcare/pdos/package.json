@@ -1,0 +1,33 @@
+{
+  "name": "@alpinehealthcare/pdos",
+  "version": "0.0.62",
+  "license": "MIT",
+  "outputPath": "dist",
+  "exports": {
+    ".": {
+      "import": "./dist/pdos.mjs",
+      "require": "./dist/pdos.umd.js"
+    }
+  },
+  "type": "commonjs",
+  "scripts": {
+    "watch": "tsc -w",
+    "build": "tsc && vite build",
+    "test": "jest --watchAll"
+  },
+  "dependencies": {
+    "@lit-protocol/encryption": "^7.0.4",
+    "@lit-protocol/lit-node-client": "^7.0.4",
+    "axios": "^1.7.2",
+    "buffer": "^6.0.3",
+    "eth-crypto": "^2.7.0",
+    "ethereum-cryptography": "^3.0.0",
+    "ethers": "^6.13.5",
+    "mobx": "6.0.4",
+    "mobx-react": "^9.1.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "private": false,
+  "yalcSig": "a72d3ae0345f124f269423fd620b416e"
+}

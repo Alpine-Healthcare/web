@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+      "target": "ESNext",                                // Target the latest version of JavaScript.
+      "module": "ESNext",                                // Use ES modules.
+      "types": ["node", "jest"],
+      "lib": ["ESNext", "DOM"],                          // Include the ESNext and DOM libraries for web compatibility.
+      "jsx": "react",                                    // Support JSX syntax for React.
+      "declaration": true,                               // Generate declaration files (.d.ts).
+      "declarationMap": true,                            // Create sourcemaps for declaration files.
+      "sourceMap": true,                                 // Create sourcemaps for debugging.
+      "outDir": "./dist",                                // Output directory for compiled files.
+      "strict": true,                                    // Enable strict type-checking options.
+      "esModuleInterop": true,                           // Ensure compatibility with ES modules.
+      "moduleResolution": "node",                        // Use Node module resolution.
+      "resolveJsonModule": true,                         // Allow importing JSON files.
+      "skipLibCheck": true,                              // Skip type checking of all declaration files.
+      "forceConsistentCasingInFileNames": true,          // Ensure file names are case-sensitive.
+      "noEmit": false,                                   // Allow emitting files if needed (set to true if not emitting).
+      "isolatedModules": true                            // Ensure that each file is treated as an isolated module.
+    },
+    "include": ["src/**/*"],                             // Include all source files in the src directory.
+    "exclude": ["**/*.test.*","node_modules", "dist", "build"]         // Exclude node_modules and build output directories.
+}
