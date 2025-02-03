@@ -13,11 +13,20 @@ export default observer(function App({ switchView }: { switchView: () => void })
     //const [newOnboard, setNewOnboard] = useState('');
     const { ready: walletReady, wallets } = useWallets();
     const { ready, authenticated, logout, login } = usePrivy();
+        
+    console.log("wallets", wallets);
 
     useEffect(() => {
-        if (wallets.length > 0 && authenticated && !pdos().modules?.auth.info.isAuthenticated && pdos().started) {
-            pdos().modules?.auth.initializeWalletUser(window.ethereum);
+
+        const getWallet = async () => {
+            if (wallets.length > 0 && authenticated && !pdos().modules?.auth.info.isAuthenticated && pdos().started) {
+                const ethProvider = await wallets[0].getEthereumProvider()
+                pdos().modules?.auth.initializeWalletUser(ethProvider);
+            }
+
         }
+
+        getWallet()
     }, [walletReady, wallets, authenticated, pdos().started]);
 
     if (!pdos().started) {

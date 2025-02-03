@@ -14,11 +14,16 @@ exports.default = (0, mobx_react_lite_1.observer)(function App({ switchView }) {
     const [newComputeNodeHash, setNewComputeNodeHash] = (0, react_1.useState)('');
     const { ready: walletReady, wallets } = (0, react_auth_2.useWallets)();
     const { ready, authenticated, logout, login } = (0, react_auth_1.usePrivy)();
+    console.log("wallets", wallets);
     (0, react_1.useEffect)(() => {
-        var _a, _b;
-        if (wallets.length > 0 && authenticated && !((_a = (0, pdos_1.default)().modules) === null || _a === void 0 ? void 0 : _a.auth.info.isAuthenticated) && (0, pdos_1.default)().started) {
-            (_b = (0, pdos_1.default)().modules) === null || _b === void 0 ? void 0 : _b.auth.initializeWalletUser(window.ethereum);
-        }
+        const getWallet = () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            if (wallets.length > 0 && authenticated && !((_a = (0, pdos_1.default)().modules) === null || _a === void 0 ? void 0 : _a.auth.info.isAuthenticated) && (0, pdos_1.default)().started) {
+                const ethProvider = yield wallets[0].getEthereumProvider();
+                (_b = (0, pdos_1.default)().modules) === null || _b === void 0 ? void 0 : _b.auth.initializeWalletUser(ethProvider);
+            }
+        });
+        getWallet();
     }, [walletReady, wallets, authenticated, (0, pdos_1.default)().started]);
     if (!(0, pdos_1.default)().started) {
         return null;
