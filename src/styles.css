@@ -1,4 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Lora&family=Public+Sans:ital@0;1&display=swap");
+@import "tailwindcss";
+
 
 /**
  * VARIABLES:
@@ -92,7 +94,7 @@ body {
 .panels {
   position: absolute;
   top: 0;
-  right: 0;
+  right: -60px;
   width: 500px;
   max-height: calc(100vh - 2 * var(--stage-padding));
   overflow-y: auto;

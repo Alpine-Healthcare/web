@@ -13,18 +13,6 @@ exports.TAGS = [
     { "key": "Access", "image": "person.svg" },
     { "key": "Data", "image": "tool.svg" }
 ];
-const wallet_sdk_1 = require("@coinbase/wallet-sdk");
-const sdk = (0, wallet_sdk_1.createCoinbaseWalletSDK)({
-    appName: "Alpine Healthcare",
-    appLogoUrl: "https://alpine.healthcare/favicon.ico",
-    appChainIds: [84532],
-    preference: {
-        options: "all",
-        attribution: {
-            auto: true,
-        }
-    },
-});
 const startPDOS = () => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
     new pdos_1.Core({
         env: "sepolia",
@@ -32,9 +20,8 @@ const startPDOS = () => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
             gatewayURL: process.env.ALPINE_GATEWAY_URL,
         },
         modules: {
-            auth: {
-                eip1193Provider: sdk.getProvider()
-            },
+            auth: {},
+            encryption: {}
         }
     });
     yield (0, pdos_1.default)().start();

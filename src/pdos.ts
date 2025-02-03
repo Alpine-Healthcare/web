@@ -13,24 +13,24 @@ export const TAGS = [
   { "key": "Access", "image": "person.svg" },
   { "key": "Data", "image": "tool.svg" }
 ]
-import { createCoinbaseWalletSDK } from '@coinbase/wallet-sdk';
 
 /*
 const nodeToCluster = {
   "N_UserAccount": "1",
 }*/
 
+/*
 const sdk = createCoinbaseWalletSDK({
   appName: "Alpine Healthcare",
   appLogoUrl: "https://alpine.healthcare/favicon.ico",
   appChainIds: [84532],
   preference: {
-      options: "all",
+      options: "eoaOnly",
       attribution: {
           auto: true,
       }
   },
-});
+});*/
 
 export const startPDOS = async () => {
   new Core({
@@ -39,9 +39,8 @@ export const startPDOS = async () => {
       gatewayURL: process.env.ALPINE_GATEWAY_URL,
     },
     modules: {
-      auth: {
-        eip1193Provider: sdk.getProvider()
-      },
+      auth: {},
+      encryption: {}
     }
   });
 

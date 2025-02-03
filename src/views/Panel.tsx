@@ -4,7 +4,6 @@ import AnimateHeight from "react-animate-height";
 const DURATION = 300;
 
 const Panel: FC<PropsWithChildren<{ title: ReactNode | string; initiallyDeployed?: boolean, isAccordion?: boolean }>> = ({
-  title,
   initiallyDeployed,
   children,
 }) => {
@@ -18,11 +17,10 @@ const Panel: FC<PropsWithChildren<{ title: ReactNode | string; initiallyDeployed
       }, DURATION);
   }, [isDeployed]);
 
+  console.log("children: ", children)
+
   return (
-    <div className="panel" ref={dom}>
-      <h2>
-        {title}{" "}
-      </h2>
+    <div className="panel" ref={dom} style={{ display : !children ? 'none': 'flex'}}>
       <AnimateHeight duration={DURATION} height={isDeployed ? "auto" : 0}>
         {children}
       </AnimateHeight>

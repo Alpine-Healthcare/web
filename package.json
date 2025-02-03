@@ -5,8 +5,10 @@
   "dependencies": {
     "@alpinehealthcare/pdos": "file:.yalc/@alpinehealthcare/pdos",
     "@coinbase/wallet-sdk": "^4.2.4",
+    "@privy-io/react-auth": "^2.2.1",
     "@react-sigma/core": "^4.0.2",
     "@sigma/node-image": ">=3.0.0-beta.9",
+    "@tailwindcss/vite": "^4.0.3",
     "@types/lodash": "^4.17.0",
     "@types/node": "^20.12.5",
     "@types/react": "^18.2.74",
@@ -31,6 +33,7 @@
     "react-json-view": "^1.21.3",
     "sigma": ">=3.0.0-beta.17",
     "typescript": "^5.4.4",
+    "viem": "^2.22.19",
     "vite": "^5.2.8",
     "vite-tsconfig-paths": "^4.3.2"
   },

@@ -1,78 +1,102 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { usePrivy } from '@privy-io/react-auth';
+import { useWallets } from '@privy-io/react-auth';
 
-// @ts-ignore 
-import pdos, {actions, Core } from "@alpinehealthcare/pdos";
- 
-export default observer(function App() {
-    const [ newPDOSRoot, setNewPDOSRoot ] = useState('')
-    const [ newComputeNodeHash, setNewComputeNodeHash ] = useState('')
-    const [ newOnboard, setNewOnboard] = useState('')
+// @ts-ignore
+import pdos, { actions } from "@alpinehealthcare/pdos";
+import './Account.css';
+
+export default observer(function App({ switchView }: { switchView: () => void }) {
+    const [newPDOSRoot, setNewPDOSRoot] = useState('');
+    const [newComputeNodeHash, setNewComputeNodeHash] = useState('');
+    //const [newOnboard, setNewOnboard] = useState('');
+    const { ready: walletReady, wallets } = useWallets();
+    const { ready, authenticated, logout, login } = usePrivy();
+
+    useEffect(() => {
+        if (wallets.length > 0 && authenticated && !pdos().modules?.auth.info.isAuthenticated && pdos().started) {
+            pdos().modules?.auth.initializeWalletUser(window.ethereum);
+        }
+    }, [walletReady, wallets, authenticated, pdos().started]);
 
     if (!pdos().started) {
-      return null
+        return null;
     }
- 
-    return (
-      <div
-        style={{
-            height: '100%',
-            width: "100%",
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '20px',
-            overflowY: 'auto',
-            padding: '20px'
-        }} 
-    >
-          {!pdos().modules?.auth.info.isAuthenticated && (
-            <button
-              className="moving-color-button"
-              onClick={async () => await pdos().modules?.auth.initializeWalletUser()}
-            >
-              connect
-            </button>
-          )}
-          {pdos().modules?.auth.info.isAuthenticated && (
-            <div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', border: '1px dotted black', padding: "30px"}}>
-                <p style={{ fontSize: '15px'}}><strong>Connected:</strong> {pdos().modules?.auth.publicKey}</p>
-                <p style={{ fontSize: '15px'}}><strong>Active:</strong> {JSON.stringify(pdos().modules?.auth.info.isActive)}</p>
-                <p style={{ fontSize: '15px'}}><strong>PDOS Root Hash:</strong> {pdos().modules?.auth.info.pdosRoot} </p>
-                <p style={{ fontSize: '15px'}}><strong>Compute Node Address:</strong> {pdos().modules?.auth.info.computeNodeAddress} </p>
-              </div>
-              <div  style={{marginTop: '20px', border: '1px dotted black', padding: "30px"}}>
-                <h3 style={{ marginBottom: "20px"}}>Alpine Contract Actions</h3>
-                <div style={{ display: 'flex', flexDirection:'row', gap: '10px'}}>
-                  <button onClick={() => pdos().modules?.auth.checkIsActive()}>check if active</button>
-                </div>
-              </div>
-  
-              <div style={{ width: "100%", display: "flex", flexDirection: "column", marginTop: '20px', gap: "5px", border: '1px dotted black', padding: "30px"}}>
-                <h3 style={{ marginBottom: "20px"}}>Alpine Contract Updates</h3>
-                <input value={newPDOSRoot} onChange={(e) => setNewPDOSRoot(e.target.value)} />
-                <button onClick={() => pdos().modules?.auth.updatePDOSRoot(newPDOSRoot)}>Update PDOS Root</button>
-                <input  style={{ marginTop: '20px'}} value={newComputeNodeHash} onChange={(e) => setNewComputeNodeHash(e.target.value)} />
-                <button onClick={() => pdos().modules?.auth.addComputeNodeAccessForUser(newComputeNodeHash)}>Update Compute Node Address</button>
-                <input style={{ marginTop: '20px'}} value={newOnboard} onChange={(e) => setNewOnboard(e.target.value)} />
-                <input style={{ marginTop: '0px'}} value={newOnboard} onChange={(e) => setNewOnboard(e.target.value)} />
-                <button onClick={() => pdos().modules?.auth.onboard()}>Onboard</button>
-              </div>
-              <div  style={{marginTop: '20px', border: '1px dotted black', padding: "30px"}}>
-                <h3 style={{ marginBottom: "20px"}}>PDOS Actions</h3>
-                <div style={{ display: 'flex', flexDirection:'row', gap: '10px'}}>
-                  <button onClick={() => actions.data.sync()}>Sync Data</button>
-                </div>
-              </div>
 
-              <div style={{ width: "100%", display: "flex", flexDirection: "column", marginTop: '20px', gap: "5px", border: '1px dotted black', padding: "30px"}}>
-                <h3 style={{ marginBottom: "20px"}}>Health Agents</h3>
-                <button onClick={async () => await actions.treatments.addTreatment("Weight Watcher", "QmeFC86hWxLE2tC7riwZfe7T7B6mzRye6xR8hhXiAxmUAB", {})}>Add weight watcher</button>
-              </div>
+    const disableLogin = !ready || (ready && authenticated);
+
+    if (!pdos().modules?.auth.info.isAuthenticated && ready && !authenticated) {
+        return (
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+            }}>
+                <button className="moving-color-button" disabled={disableLogin} onClick={login}>
+                    Connect
+                </button>
+
             </div>
-          )}
-      </div>
+
+        )
+    }
+
+    return (
+        <div className="container">
+            {pdos().modules?.auth.info.isAuthenticated && ready && (
+                <div>
+                <button style={{ marginBottom: '20px'}} onClick={async () => {
+                    logout()
+                    await pdos().modules?.auth.disconnectWalletUser()
+                }} className="button button-red">Disconnect</button>
+                <button style={{ marginLeft:'10px', marginBottom: '20px'}} onClick={async () => {
+                    switchView()
+                }} className="button button-red">View PDOS Tree</button>
+                </div>
+            )}
+            {pdos().modules?.auth.info.isAuthenticated && (
+                <div className="content">
+                    <div className="card">
+                        <h3>Alpine Contract Details</h3>
+                        <p><strong>Connected:</strong> {pdos().modules?.auth.publicKey}</p>
+                        <p><strong>Active:</strong> {JSON.stringify(pdos().modules?.auth.info.isActive)}</p>
+                        <p><strong>PDOS Root Hash:</strong> {pdos().modules?.auth.info.pdosRoot}</p>
+                        <p><strong>Compute Node Address:</strong> {pdos().modules?.auth.info.computeNodeAddress}</p>
+                    </div>
+                    {/*<div className="card">
+                        <h3>Alpine Contract Actions</h3>
+                        <button onClick={() => pdos().modules?.auth.checkIsActive()} className="button button-green">Check if Active</button>
+                    </div>*/}
+                    <div className="card">
+                        <h3>Alpine Contract Updates</h3>
+                        <div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
+                            <input className="input" placeholder="New PDOS Root" value={newPDOSRoot} onChange={(e) => setNewPDOSRoot(e.target.value)} />
+                            <button onClick={() => pdos().modules?.auth.updatePDOSRoot(newPDOSRoot)} className="button button-blue">Update</button>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
+                        <input className="input" placeholder="New Compute Node Hash" value={newComputeNodeHash} onChange={(e) => setNewComputeNodeHash(e.target.value)} />
+                        <button onClick={() => pdos().modules?.auth.addComputeNodeAccessForUser(newComputeNodeHash)} className="button button-blue">Update </button>
+                        </div>
+                        {/*<div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
+                        <input className="input" placeholder="Onboard" value={newOnboard} onChange={(e) => setNewOnboard(e.target.value)} />
+                        <button onClick={() => pdos().modules?.auth.onboard()} className="button button-blue">Update</button>
+                        </div>*/}
+                    </div>
+                    <div className="card">
+                        <h3>Alpine Marketplace AI Health Agents</h3>
+                        <button onClick={async () => await actions.treatments.addTreatment("Weight Watcher", "QmeFC86hWxLE2tC7riwZfe7T7B6mzRye6xR8hhXiAxmUAB", {})} className="button button-purple">
+                            Add Weight Watcher
+                        </button>
+                    </div>
+                    <div className="card">
+                        <h3>PDOS</h3>
+                        <button onClick={() => actions.data.sync()} className="button button-yellow">Sync Data</button>
+                    </div>
+                </div>
+            )}
+        </div>
     );
-  })
+});

@@ -53,6 +53,8 @@ export default class Auth extends Module {
   private eip1193Provider: any;
   private wallet: ethers.Wallet | undefined
 
+  private initStarted: boolean = false
+
   constructor(core : Core, private config : Config){
     super(core);
     makeObservable(this, {
@@ -63,11 +65,6 @@ export default class Auth extends Module {
     if (config.eip1193Provider) {
       this.eip1193Provider = config.eip1193Provider
     }
-
-    if (!this.core.isComputeNode) {
-      this.ethersProvider = new ethers.BrowserProvider(config.eip1193Provider)
-    }
-
   }
 
   public async initializeWalletUserWithPrivateKey() {
@@ -81,20 +78,27 @@ export default class Auth extends Module {
     }
   }
 
-  public async initializeWalletUser() {
+  public async initializeWalletUser(eip1193Provider?: ethers.Eip1193Provider) {
+    if (this.initStarted) {
+      return
+    }
+
+    this.initStarted = true
+    if (eip1193Provider) {
+      this.eip1193Provider = eip1193Provider
+      this.ethersProvider = new ethers.BrowserProvider(eip1193Provider)
+    }
     this.authType = AuthType.WALLET
     let addresses: string[] = []
-    await this.disconnectWalletUser()
     addresses = await this.eip1193Provider.request({ method: 'eth_requestAccounts' });
     if (addresses.length > 0) {
       this.publicKey = addresses[0]
       await this.initInfoForWalletUser()
     }
-    return
   }
 
   public async disconnectWalletUser() {
-    await this.eip1193Provider.disconnect()
+    //await this.eip1193Provider.disconnect()
     this.info = {
       isActive: false,
       isAuthenticated: false,
@@ -143,17 +147,9 @@ export default class Auth extends Module {
 
     this.info.isAuthenticated = true
     this.info.computeNodeAddress = await this.getUserComputeNode()
+
   }
   
-  public async encryptionTest(){
-    console.log("testing encryption!!!")
-    const testData = "hi"
-    const { ciphertext, dataToEncryptHash} = await this.core.modules.encryption?.encrypt(testData) as any
-
-    const deciphered = await this.core.modules.encryption?.decrypt(ciphertext, dataToEncryptHash)
-    console.log("descipered text: ", deciphered)
-  }
-
   public async encrypt(data: object) {
     const dataParsed = JSON.stringify(data)
     if (!this.publicKey) {

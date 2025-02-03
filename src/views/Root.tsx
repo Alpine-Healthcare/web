@@ -91,36 +91,34 @@ const Root: FC = observer(function Root(){
 
   const isAuthenticated = pdos().modules?.auth?.info.isAuthenticated;
 
+  console.log("hovered node: ", hoveredNode)
+
   return (
     <div
       id="app-root"
       className={showContents ? "show-contents" : ""}
       style={{ display: 'flex', flexDirection: 'row'}}
     >
-      {isAuthenticated && (
+      {isAuthenticated && !viewAccount && (
         <div
           style={{
             display: 'flex',
             flexDirection: "row",
-          position: 'absolute',
-          top: 15,
+          position: 'fixed',
+          top: 10,
           left: 80,
           zIndex: 100,
           gap: '10px'
           }}
         >
-        <button onClick={async () => {
-          await pdos().modules?.auth.disconnectWalletUser()
-          location.reload()
-        }}>Disconnect</button>
-        <button onClick={() => setViewAccount(!viewAccount)}>{viewAccount ? "View PDOS" : "View Account"}</button>
+        <button className="button" onClick={() => setViewAccount(!viewAccount)}>{viewAccount ? "View PDOS" : "View Account"}</button>
       </div>)}
-      <img src={Logo} width={50} height={50}  style={{ zIndex: 110, position : 'absolute', top: 15, left: 5}} />
-      <img src={Mountains} width={40}  style={{ zIndex: 100, height: '100vh', width: "60px", objectFit: 'cover' }} />
+      <img src={Logo} width={50} height={50}  style={{ position: 'fixed', zIndex: 110, top: 15, left: 5}} />
+      <img src={Mountains} width={40}  style={{ position: 'fixed', zIndex: 100, height: '100vh', width: "60px", objectFit: 'cover' }} />
       <div style={{ position: 'relative', paddingLeft: '60px', height: "100vh", width: 'calc(100vw - 60px)'}}>
 
       {viewAccount ? (
-        <Account />
+        <Account switchView={() => setViewAccount(!viewAccount)} />
       ): (
         <SigmaContainer graph={DirectedGraph} settings={sigmaSettings} className="react-sigma">
         <GraphEventsController setHoveredNode={setHoveredNode} />
@@ -187,9 +185,9 @@ const Root: FC = observer(function Root(){
                   title={<>
                   </>}
                 >
-                  <div style={{ width: "450px", overflowX: 'scroll'}}>
+                  {hoveredNode !== null && <div style={{ width: "450px", overflowX: 'scroll'}}>
                     {hoveredNode && <ReactJson  src={hoveredNode} />}
-                  </div>
+                  </div>}
                   </Panel>}
               </div>
             </div>
