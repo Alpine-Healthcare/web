@@ -15,6 +15,14 @@ export enum AuthType {
   PASSKEY
 }
 
+export enum InitSteps {
+  ADDING_TO_ALPINE = "Adding to alpine",
+  GENERATING_ENCRYPTION_KEYS = "Generating encryption keys",
+  INITIALIZING_PDOS = "Initializing PDOS",
+  ONBOARDING = "Onboarding",
+  COMPLETED = "Completed"
+}
+
 interface AuthInfo {
   isAuthenticated: boolean
   isActive: boolean
@@ -33,8 +41,8 @@ interface Config {
   privateKey: string
 }
 
-export const ALPINE_HEALTHCARE = "0x1e249431Df6ceeeF616d4d23d859A0F49A82aa32" 
-export const ALPINE_HEALTHCARE_ABI = [{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"addComputeNodeAccessForUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"checkIsActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getPDOSRoot","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserEncryptedDataKeys","outputs":[{"components":[{"internalType":"string","name":"dataKey","type":"string"},{"internalType":"string","name":"marketplaceKey","type":"string"}],"internalType":"struct AlpineHealthcare.EncryptedKeys","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUsersComputeNode","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"getUsersForComputeNode","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"hasUserAccess","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_pdosHash","type":"string"},{"internalType":"string","name":"_encryptedDataKey","type":"string"}],"name":"onboard","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"removeComputeNodeAccessForUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"subscribeToMarketplaceItem","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"string","name":"_newHash","type":"string"}],"name":"updatePDOSRoot","outputs":[],"stateMutability":"nonpayable","type":"function"}] 
+export const ALPINE_HEALTHCARE = "0xA690F14afBe9b9C9366088Ab32dC49451C4CBE50" 
+export const ALPINE_HEALTHCARE_ABI = [{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"addComputeNodeAccessForUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"checkIsActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getPDOSRoot","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserEncryptedDataKeys","outputs":[{"components":[{"internalType":"string","name":"dataKey","type":"string"},{"internalType":"string","name":"marketplaceKey","type":"string"}],"internalType":"struct AlpineHealthcare.EncryptedKeys","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUsersComputeNode","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"getUsersForComputeNode","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"hasUserAccess","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"offboardUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_pdosHash","type":"string"},{"internalType":"string","name":"_encryptedDataKey","type":"string"}],"name":"onboard","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"removeComputeNodeAccessForUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"subscribeToMarketplaceItem","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"string","name":"_newHash","type":"string"}],"name":"updatePDOSRoot","outputs":[],"stateMutability":"nonpayable","type":"function"}] 
 export default class Auth extends Module {
 
   public authType : AuthType | undefined;
@@ -44,6 +52,7 @@ export default class Auth extends Module {
     pdosRoot: undefined,
     computeNodeAddress: undefined
   }
+  public initStep: InitSteps | undefined;
 
   public credentialId : string | undefined = undefined;
   public publicKey: string | undefined;
@@ -112,10 +121,19 @@ export default class Auth extends Module {
 
   public async initInfoForWalletUser() {
     this.authType = AuthType.WALLET
-    this.info.isActive = await this.checkIsActive()
+    try {
+      this.info.isActive = await this.checkIsActive()
+      this.info.pdosRoot= await this.getPDOSRoot()
+    } catch (e) {
+      this.info.isActive = false
+    }
 
-    const pdosRoot = await this.getPDOSRoot()
-    if (!pdosRoot) {
+    let generatedAccessPackage = undefined
+    const isNewUser = !this.info.pdosRoot
+
+
+    if (isNewUser) {
+      this.initStep = InitSteps.ADDING_TO_ALPINE
       try {
         const newUser = await fetch(this.core.gatewayURL+ "/auth/register-wallet-user", {
           method: 'POST',
@@ -129,56 +147,33 @@ export default class Auth extends Module {
         const newUserResponse = await newUser.json()
         const newPDOSRoot = (newUserResponse as any).hash_id
         this.info.pdosRoot = newPDOSRoot
-        await this.onboard(newPDOSRoot, "hi")
+        this.initStep = InitSteps.GENERATING_ENCRYPTION_KEYS
+        generatedAccessPackage = await this.core.modules.encryption?.generateAccessPackage()
       } catch (e) {
         throw new Error("Failed onboarding user")
       }
+    } 
+
+    this.initStep = InitSteps.INITIALIZING_PDOS
+    await this.core.tree.root.init(this.info.pdosRoot)
+
+    if (isNewUser) {
+      await this.core.tree.root.addAccessPackage(generatedAccessPackage?.accessPackageEncrypted)
+      this.initStep = InitSteps.ONBOARDING
+      await this.onboard(this.core.tree.root._hash, "")
+      this.initStep = InitSteps.COMPLETED
     } else {
-      const pdosRoot = await this.getPDOSRoot()
-      this.info.pdosRoot = pdosRoot
-    }
-   
-    const root = await this.core.tree.root.init(this.info.pdosRoot)
-
-    if (this.info.pdosRoot !== root) {
-      await this.updatePDOSRoot(root)
-      this.info.pdosRoot = root
+      await this.core.tree.root.syncLocalRootHash()
+      await this.core.modules.encryption?.setAccessPackage(this.core.tree.root)
+      this.initStep = InitSteps.COMPLETED
     }
 
+    this.info.pdosRoot = this.core.tree.root._hash
     this.info.isAuthenticated = true
     this.info.computeNodeAddress = await this.getUserComputeNode()
-
+    this.info.isActive = true
   }
   
-  public async encrypt(data: object) {
-    const dataParsed = JSON.stringify(data)
-    if (!this.publicKey) {
-      return
-    }
-
-    const encrypted = aes.encrypt(
-      utf8ToBytes(dataParsed),
-      hexToBytes("2b7e151628aed2a6abf7158809cf4f3c"),
-      hexToBytes("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff")
-    )
-
-    return uint8ArrayToBase64(encrypted)
-  }
-  
-  public async decrypt(data: string) {
-    if (!this.publicKey) {
-      return
-    }
-
-    const decrypted = aes.decrypt(
-      base64ToUint8Array(data),
-      hexToBytes("2b7e151628aed2a6abf7158809cf4f3c"),
-      hexToBytes("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff")
-    )
-
-    return JSON.parse(bytesToUtf8(decrypted))
-  }
-
   public async getSigner() {
     if (this.ethersProvider) {
       const signer = await this.ethersProvider.getSigner();
@@ -206,6 +201,13 @@ export default class Auth extends Module {
       encryptedDataKey,
     );
 
+    await tx.wait();
+  }
+
+  public async offboard() {
+    const signer = await this.getSigner();
+    const contract = new ethers.Contract(ALPINE_HEALTHCARE, ALPINE_HEALTHCARE_ABI, signer);
+    const tx = await contract.offboardUser(this.publicKey);
     await tx.wait();
   }
 

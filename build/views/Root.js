@@ -68,7 +68,6 @@ const Root = (0, mobx_react_lite_1.observer)(function Root() {
         }
     }, [(0, pdos_1.default)().started, (_b = (_a = (0, pdos_1.default)().modules) === null || _a === void 0 ? void 0 : _a.auth) === null || _b === void 0 ? void 0 : _b.info.pdosRoot, (_d = (_c = (0, pdos_1.default)().modules) === null || _c === void 0 ? void 0 : _c.auth) === null || _d === void 0 ? void 0 : _d.info.isAuthenticated]);
     const isAuthenticated = (_f = (_e = (0, pdos_1.default)().modules) === null || _e === void 0 ? void 0 : _e.auth) === null || _f === void 0 ? void 0 : _f.info.isAuthenticated;
-    console.log("hovered node: ", hoveredNode);
     return ((0, jsx_runtime_1.jsxs)("div", { id: "app-root", className: showContents ? "show-contents" : "", style: { display: 'flex', flexDirection: 'row' }, children: [isAuthenticated && !viewAccount && ((0, jsx_runtime_1.jsx)("div", { style: {
                     display: 'flex',
                     flexDirection: "row",

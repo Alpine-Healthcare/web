@@ -3,9 +3,7 @@ import PDFSNode from "../store/PDFSNode"
 
 
 export const addTreatment = async (name: string, hashId: string, intake: object) => {
-  console.log("adding treatment: ", name)
   await pdos().tree.root.edges.e_out_TreatmentManifest.addTreatment(name, hashId, intake)
-  console.log("callign sync")
   await pdos().tree.root.syncLocalRootHash()
 }
 

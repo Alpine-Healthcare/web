@@ -10,12 +10,9 @@ import './Account.css';
 export default observer(function App({ switchView }: { switchView: () => void }) {
     const [newPDOSRoot, setNewPDOSRoot] = useState('');
     const [newComputeNodeHash, setNewComputeNodeHash] = useState('');
-    //const [newOnboard, setNewOnboard] = useState('');
     const { ready: walletReady, wallets } = useWallets();
     const { ready, authenticated, logout, login } = usePrivy();
         
-    console.log("wallets", wallets);
-
     useEffect(() => {
 
         const getWallet = async () => {
@@ -23,7 +20,6 @@ export default observer(function App({ switchView }: { switchView: () => void })
                 const ethProvider = await wallets[0].getEthereumProvider()
                 pdos().modules?.auth.initializeWalletUser(ethProvider);
             }
-
         }
 
         getWallet()
@@ -49,8 +45,26 @@ export default observer(function App({ switchView }: { switchView: () => void })
                 </button>
 
             </div>
-
         )
+    }
+
+    if (pdos().modules?.auth.initStep && pdos().modules?.auth.initStep !== 'Completed') {
+        return (
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                marginTop: '100px',
+                alignItems: 'center',
+                height: '100vh',
+            }}>
+                <button className="moving-color-button" disabled={true} onClick={login} style={{ width: "300px", height: "50px"}}>
+                    {pdos().modules?.auth.initStep}
+                </button>
+
+            </div>
+        )
+
     }
 
     return (
@@ -88,6 +102,9 @@ export default observer(function App({ switchView }: { switchView: () => void })
                         <div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
                         <input className="input" placeholder="New Compute Node Hash" value={newComputeNodeHash} onChange={(e) => setNewComputeNodeHash(e.target.value)} />
                         <button onClick={() => pdos().modules?.auth.addComputeNodeAccessForUser(newComputeNodeHash)} className="button button-blue">Update </button>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
+                        <button onClick={() => pdos().modules?.auth.offboard()} className="button button-blue">Offboard User </button>
                         </div>
                         {/*<div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
                         <input className="input" placeholder="Onboard" value={newOnboard} onChange={(e) => setNewOnboard(e.target.value)} />

@@ -16,7 +16,6 @@ const Panel = ({ initiallyDeployed, children, }) => {
                     (_a = dom.current.parentElement) === null || _a === void 0 ? void 0 : _a.scrollTo({ top: dom.current.offsetTop - 5, behavior: "smooth" });
             }, DURATION);
     }, [isDeployed]);
-    console.log("children: ", children);
     return ((0, jsx_runtime_1.jsx)("div", { className: "panel", ref: dom, style: { display: !children ? 'none' : 'flex' }, children: (0, jsx_runtime_1.jsx)(react_animate_height_1.default, { duration: DURATION, height: isDeployed ? "auto" : 0, children: children }) }));
 };
 exports.default = Panel;

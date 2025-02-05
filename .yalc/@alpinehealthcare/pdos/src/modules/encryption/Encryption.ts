@@ -6,6 +6,9 @@ import { LIT_NETWORK } from "@lit-protocol/constants";
 import { ALPINE_HEALTHCARE } from "../auth/Auth";
 
 import { encryptString, decryptToString } from "@lit-protocol/encryption"
+import { getRandomBytesSync } from "ethereum-cryptography/random.js";
+import { hexToBytes, bytesToHex, bytesToUtf8, utf8ToBytes } from "ethereum-cryptography/utils.js";
+
 
 import { LIT_ABILITY } from "@lit-protocol/constants";
 import {
@@ -14,24 +17,13 @@ import {
   createSiweMessageWithRecaps,
   generateAuthSig,
 } from "@lit-protocol/auth-helpers";
+import * as aes from "ethereum-cryptography/aes.js";
+import PDFSNode from "../../store/PDFSNode";
 
-const userAccessControlConditions  = (address: string) => [
-  {
-    contractAddress: ALPINE_HEALTHCARE,
-    standardContractType: "",
-    chain: "baseSepolia",
-    method: "hasUserAccess",
-    parameters: [address],
-    returnValueTest: {
-      comparator: "=",
-      value: "true",
-    },
-  },
-];
 
 const accessCondition = (address: string) => ([{
   chain: "baseSepolia",  // e.g. "ethereum", "polygon", "mumbai", etc.
-  contractAddress: "0x1e249431Df6ceeeF616d4d23d859A0F49A82aa32",
+  contractAddress: ALPINE_HEALTHCARE,
   functionName: "hasUserAccess",
   functionParams: [address],  // Lit will replace :userAddress with the requesting user's address
   functionAbi: {
@@ -81,8 +73,20 @@ const capacityDelegationAuthSig ={
   address: '0xe4d172EE62f88Ba29D051D60620fEBB308B81F4E'
 } 
 
+export interface AccessPackage {
+  iv: string,
+  datakey: string,
+}
+
+export interface AccessPackageEncrypted {
+  ciphertext: string,
+  dataToEncryptHash: string
+}
+
 export default class Encryption extends Module {
   private litNodeClient: LitJsSdk.LitNodeClient | undefined
+  private accessPackage: AccessPackage | undefined
+  private accessPackageEncrypted: AccessPackageEncrypted | undefined
 
   constructor(core : Core, private config : EncryptionConfig) {
     super(core);
@@ -96,9 +100,84 @@ export default class Encryption extends Module {
     await this.litNodeClient.connect();
   }
 
-  public async encrypt(data: string) {
+  public async generateAccessPackage(): Promise<{ accessPackage: AccessPackage, accessPackageEncrypted: AccessPackageEncrypted } | undefined> {
+
+    const iv = getRandomBytesSync(16);
+    const datakey = getRandomBytesSync(32);
+
+    const accessPackage: AccessPackage = {
+      iv: bytesToHex(iv),
+      datakey: bytesToHex(datakey),
+    }
+
+    const accessPackageEncrypted = await this.encryptWithLit(JSON.stringify(accessPackage));
+
+    if (!accessPackageEncrypted) {
+      return
+    }
+
+
+    this.accessPackage = accessPackage;
+
+    console.log("this.accessPackage: ", this.accessPackage)
+
+    return {
+      accessPackage,
+      accessPackageEncrypted
+    }
+  }
+
+  public async setAccessPackage(root: PDFSNode) {
+    this.accessPackageEncrypted = root._rawNode.access_package
+
+    if (!this.accessPackageEncrypted) {
+      throw new Error("Access package not found, abandoning!")
+    }
+
+    console.log("this.accessPackageEncrypted", this.accessPackageEncrypted)
+
+    const decryptedAccessPackage = await this.decryptWithLit(this.accessPackageEncrypted?.ciphertext, this.accessPackageEncrypted?.dataToEncryptHash)
+
+    if (!decryptedAccessPackage) {
+      throw new Error("Failed to decrypt access package with Lit")
+    }
+
+    this.accessPackage = JSON.parse(decryptedAccessPackage)
+    console.log("this.accessPackage", this.accessPackage)
+  }
+
+  public async encryptNode(data: string | object) {
+
+    const dataParsed = typeof data === "string" ? data : JSON.stringify(data)
+
+    if (!this.accessPackage) {
+      throw new Error("Access package not found, abandoning!")
+    }
+
+    return bytesToHex(aes.encrypt(
+      utf8ToBytes(dataParsed),
+      hexToBytes(this.accessPackage.datakey),
+      hexToBytes(this.accessPackage.iv),
+      "aes-256-ctr"
+    ))
+  }
+  
+  public async decryptNode(encryptedData: string) {
+    if (!this.accessPackage) {
+      return
+    }
+
+    return JSON.parse(bytesToUtf8(aes.decrypt(
+      hexToBytes(encryptedData),
+      hexToBytes(this.accessPackage.datakey),
+      hexToBytes(this.accessPackage.iv),
+      "aes-256-ctr"
+    )))
+  }
+
+  public async encryptWithLit(data: string): Promise<AccessPackageEncrypted | undefined> {
     if (!this.core.modules.auth?.publicKey || !this.litNodeClient) {
-      return 
+      throw new Error("Missing publickey or litNodeClient")
     }
 
     const { ciphertext, dataToEncryptHash } = await encryptString(
@@ -109,19 +188,18 @@ export default class Encryption extends Module {
       this.litNodeClient,
     );
 
-    // Return the ciphertext and dataToEncryptHash
     return {
       ciphertext,
       dataToEncryptHash,
     };
-
   }
 
-  public async decrypt(ciphertext: string, dataToEncryptHash: string) {
+  public async decryptWithLit(ciphertext: string, dataToEncryptHash: string) {
+    console.log("Decrypting with lit")
 
     const sessionSigs = await this.getSessionSignatures();
     if (!this.core.modules.auth?.publicKey || !this.litNodeClient || !sessionSigs) {
-      return 
+      throw new Error("Missing publickey, litNodeClient, or sessionSigs")
     }
 
     // Decrypt the message
@@ -138,7 +216,7 @@ export default class Encryption extends Module {
 
 
     // Return the decrypted string
-    return { decryptedString };
+    return decryptedString;
 
   }
 
@@ -147,12 +225,11 @@ export default class Encryption extends Module {
     const signer = await this.core.modules.auth?.getSigner()
 
     if (!this.litNodeClient || !this.core.modules.auth?.publicKey || !signer) {
-      return
+      throw new Error("Missing litNodeClient, publickey, or signer")
     }
  
     // Get the latest blockhash
     const latestBlockhash = await this.litNodeClient.getLatestBlockhash();
-    console.log("latest blockhash: ", latestBlockhash)
  
     // Define the authNeededCallback function
     const authNeededCallback = async(params: any) => {
@@ -167,10 +244,6 @@ export default class Encryption extends Module {
         throw new Error("resourceAbilityRequests is required");
       }
 
-      console.log("publick key: ", this.core.modules.auth?.publicKey!)
-      console.log("latest blockhash: ", latestBlockhash)
-      console.log("params: ", params)
-  
       // Create the SIWE message
       const toSign = await createSiweMessageWithRecaps({
         uri: params.uri,
@@ -181,15 +254,7 @@ export default class Encryption extends Module {
         litNodeClient: this.litNodeClient,
       });
 
-      console.log("toSign: ", toSign)
-
-      console.log("signer: ", signer)
-
-      const testSign = await signer.signMessage("testSign");
-      console.log("testSign: ", testSign)
-
       const sig = await signer.signMessage(toSign);
-      console.log("sig",sig)
  
       // Generate the authSig
       const authSig = await generateAuthSig({
@@ -197,8 +262,6 @@ export default class Encryption extends Module {
         toSign,
       });
 
-      console.log("authSig: ", authSig)
- 
       return authSig;
     }
  

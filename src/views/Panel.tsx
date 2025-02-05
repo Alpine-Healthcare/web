@@ -17,8 +17,6 @@ const Panel: FC<PropsWithChildren<{ title: ReactNode | string; initiallyDeployed
       }, DURATION);
   }, [isDeployed]);
 
-  console.log("children: ", children)
-
   return (
     <div className="panel" ref={dom} style={{ display : !children ? 'none': 'flex'}}>
       <AnimateHeight duration={DURATION} height={isDeployed ? "auto" : 0}>

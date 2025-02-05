@@ -6,9 +6,7 @@ import Inbox from "./Inbox";
 import { addNodeToNetworkMapper } from "./NetworkMapper";
 import PDFSNode from "./PDFSNode";
 import TreatmentManifest from "./TreatmentManifest";
-import { getUserHashId } from "../utils/mutex";
 import { AuthType } from "../modules/auth/Auth";
-import { hash } from "crypto";
 
 
 export default class UserAccount extends PDFSNode {
@@ -29,31 +27,25 @@ export default class UserAccount extends PDFSNode {
     addNodeToNetworkMapper("Inbox", Inbox)
   }
 
-  public async checkPDOSTreeIsMostRecent(){
-    let hashId;
-
-    if (this.core.modules.auth?.authType === AuthType.WALLET) {
-      hashId = await this.core.modules.auth?.getPDOSRoot() 
-    } else {
-      hashId = await getUserHashId(this._rawNode.credentials[0].id)
-    }
-
-    if (hashId === this._hash) {
-      return true
-    }
-    this.edges = {}
-    await this.init(hashId)
-    return false
-  }
-  
   public async syncLocalRootHash(addressToUpdate?: string){
     if (this.core.modules.auth?.authType === AuthType.WALLET) {
-      const hashId = await this.core.modules.auth?.getPDOSRoot(addressToUpdate) 
+      let hashId
+      try{
+        hashId = await this.core.modules.auth?.getPDOSRoot(addressToUpdate) 
+      }catch (e) {
+
+      }
       if (this._hash !== hashId) {
         await this.core.modules.auth.updatePDOSRoot(this._hash, addressToUpdate ?? this.core.modules.auth.publicKey )
-        console.log("# pdos : new root - " + this._hash)
+        console.log("# pdos : synced new root - " + this._hash)
       }
     } 
+  }
+
+  public async addAccessPackage(accessPackage: any){
+    await this.update({
+      access_package: accessPackage
+    }, true)
   }
 
   public async init(hash: string) {

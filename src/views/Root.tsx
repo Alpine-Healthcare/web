@@ -91,8 +91,6 @@ const Root: FC = observer(function Root(){
 
   const isAuthenticated = pdos().modules?.auth?.info.isAuthenticated;
 
-  console.log("hovered node: ", hoveredNode)
-
   return (
     <div
       id="app-root"

@@ -66,7 +66,11 @@ export default class PDFSNode {
       if (this._hash) {
         this._rawNode = await getFromPdfs(this._hash)
         if (this._rawNode.data) {
-          this._rawNode.data = await this.core.modules.auth?.decrypt(this._rawNode.data) 
+          try {
+            this._rawNode.data = await this.core.modules.encryption?.decryptNode(this._rawNode.data) 
+          } catch (e) {
+            throw new Error("Failed to decrypt data")
+          }
         }
         this._nodeType = this._rawNode.type
         this._treePathInclusive = [...this._treePath, this._hash] 
@@ -189,8 +193,19 @@ export default class PDFSNode {
     )
   }
 
-  protected async update(rawNodeUpdate: any) {
-    this._rawNodeUpdate = rawNodeUpdate 
+  protected async update(rawNodeUpdate: any, unencrypted: boolean = false) {
+    let nodeUpdate = {}
+
+    if (unencrypted) {
+      this._rawNodeUpdate = rawNodeUpdate
+    } else {
+      nodeUpdate = {
+        data: rawNodeUpdate
+      }
+      const encrypted = await pdos().modules.encryption?.encryptNode(nodeUpdate)
+      this._rawNodeUpdate = encrypted 
+    }
+
     this._hash=""
     const previousTreePath = [...this._treePathInclusive.slice(0,-1)]
     await this.node
@@ -229,7 +244,7 @@ export default class PDFSNode {
       })
     }
 
-    const encrypted = await pdos().modules.auth?.encrypt(nodeUpdate)
+    const encrypted = await pdos().modules.encryption?.encryptNode(nodeUpdate)
 
     const nodeUpdateEncrypted = {
       ...nodeUpdate,
