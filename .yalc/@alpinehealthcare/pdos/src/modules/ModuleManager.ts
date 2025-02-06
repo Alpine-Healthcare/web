@@ -3,6 +3,7 @@ import Notification from "./notification/Notification";
 import Auth from "./auth/Auth";
 import DataRequest from "./dataRequest/DataRequest";
 import Encryption from "./encryption/Encryption";
+import Storage from "./storage/Storage";
 
 export default class ModuleManager {
     public appManager?: AppManager;
@@ -10,4 +11,5 @@ export default class ModuleManager {
     public auth?: Auth;
     public dataRequest?: DataRequest;
     public encryption?: Encryption;
+    public storage?: Storage;
 }

@@ -34,13 +34,14 @@ const sdk = createCoinbaseWalletSDK({
 
 export const startPDOS = async () => {
   new Core({
-    env: "sepolia",
+    env: "marigold",
     context: {
       gatewayURL: process.env.ALPINE_GATEWAY_URL,
     },
     modules: {
       auth: {},
-      encryption: {}
+      encryption: {},
+      storage: {}
     }
   });
 

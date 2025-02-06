@@ -52,8 +52,6 @@ const accessCondition = (address: string) => ([{
   }
 }]);
 
-export interface EncryptionConfig {}
-
 const capacityDelegationAuthSig ={
   sig: '0xdb0162a72aec0dc53c7634d4de77fba9e6700e186e151233b665ba0fa44ccf3e15759143d4d9983581d0eb56807372c145b349df59c06b43fa492707d40dbfbe1b',
   derivedVia: 'web3.eth.personal.sign',
@@ -73,6 +71,8 @@ const capacityDelegationAuthSig ={
   address: '0xe4d172EE62f88Ba29D051D60620fEBB308B81F4E'
 } 
 
+const PDOS_ACCESS_PACKAGE = "pdos-accessPackage"
+
 export interface AccessPackage {
   iv: string,
   datakey: string,
@@ -88,7 +88,7 @@ export default class Encryption extends Module {
   private accessPackage: AccessPackage | undefined
   private accessPackageEncrypted: AccessPackageEncrypted | undefined
 
-  constructor(core : Core, private config : EncryptionConfig) {
+  constructor(core : Core, private config : null) {
     super(core);
   }
 
@@ -100,7 +100,7 @@ export default class Encryption extends Module {
     await this.litNodeClient.connect();
   }
 
-  public async generateAccessPackage(): Promise<{ accessPackage: AccessPackage, accessPackageEncrypted: AccessPackageEncrypted } | undefined> {
+  public async generateAccessPackage(): Promise<AccessPackageEncrypted | undefined> {
 
     const iv = getRandomBytesSync(16);
     const datakey = getRandomBytesSync(32);
@@ -113,18 +113,14 @@ export default class Encryption extends Module {
     const accessPackageEncrypted = await this.encryptWithLit(JSON.stringify(accessPackage));
 
     if (!accessPackageEncrypted) {
-      return
+      throw new Error("Failed to encrypt access package with Lit")
     }
 
 
     this.accessPackage = accessPackage;
+    await this.core.modules.storage?.addItem(PDOS_ACCESS_PACKAGE, JSON.stringify(accessPackage))
 
-    console.log("this.accessPackage: ", this.accessPackage)
-
-    return {
-      accessPackage,
-      accessPackageEncrypted
-    }
+    return accessPackageEncrypted
   }
 
   public async setAccessPackage(root: PDFSNode) {
@@ -134,7 +130,12 @@ export default class Encryption extends Module {
       throw new Error("Access package not found, abandoning!")
     }
 
-    console.log("this.accessPackageEncrypted", this.accessPackageEncrypted)
+    const savedAccessPackage = await this.core.modules.storage?.getItem(PDOS_ACCESS_PACKAGE)
+
+    if (savedAccessPackage) {
+      this.accessPackage = JSON.parse(savedAccessPackage)
+      return
+    }
 
     const decryptedAccessPackage = await this.decryptWithLit(this.accessPackageEncrypted?.ciphertext, this.accessPackageEncrypted?.dataToEncryptHash)
 
@@ -143,7 +144,6 @@ export default class Encryption extends Module {
     }
 
     this.accessPackage = JSON.parse(decryptedAccessPackage)
-    console.log("this.accessPackage", this.accessPackage)
   }
 
   public async encryptNode(data: string | object) {
@@ -195,8 +195,6 @@ export default class Encryption extends Module {
   }
 
   public async decryptWithLit(ciphertext: string, dataToEncryptHash: string) {
-    console.log("Decrypting with lit")
-
     const sessionSigs = await this.getSessionSignatures();
     if (!this.core.modules.auth?.publicKey || !this.litNodeClient || !sessionSigs) {
       throw new Error("Missing publickey, litNodeClient, or sessionSigs")
@@ -254,8 +252,6 @@ export default class Encryption extends Module {
         litNodeClient: this.litNodeClient,
       });
 
-      const sig = await signer.signMessage(toSign);
- 
       // Generate the authSig
       const authSig = await generateAuthSig({
         signer: signer,

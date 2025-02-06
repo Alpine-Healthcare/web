@@ -15,13 +15,14 @@ exports.TAGS = [
 ];
 const startPDOS = () => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
     new pdos_1.Core({
-        env: "sepolia",
+        env: "marigold",
         context: {
             gatewayURL: process.env.ALPINE_GATEWAY_URL,
         },
         modules: {
             auth: {},
-            encryption: {}
+            encryption: {},
+            storage: {}
         }
     });
     yield (0, pdos_1.default)().start();

@@ -128,9 +128,8 @@ export default class Auth extends Module {
       this.info.isActive = false
     }
 
-    let generatedAccessPackage = undefined
+    let generatedAccessPackageEncrypted = undefined
     const isNewUser = !this.info.pdosRoot
-
 
     if (isNewUser) {
       this.initStep = InitSteps.ADDING_TO_ALPINE
@@ -148,24 +147,27 @@ export default class Auth extends Module {
         const newPDOSRoot = (newUserResponse as any).hash_id
         this.info.pdosRoot = newPDOSRoot
         this.initStep = InitSteps.GENERATING_ENCRYPTION_KEYS
-        generatedAccessPackage = await this.core.modules.encryption?.generateAccessPackage()
+        generatedAccessPackageEncrypted = await this.core.modules.encryption?.generateAccessPackage()
       } catch (e) {
         throw new Error("Failed onboarding user")
       }
-    } 
+    } else {
+      this.initStep = InitSteps.COMPLETED
+    }
 
-    this.initStep = InitSteps.INITIALIZING_PDOS
+    if (isNewUser) {
+      this.initStep = InitSteps.INITIALIZING_PDOS
+    }
     await this.core.tree.root.init(this.info.pdosRoot)
 
     if (isNewUser) {
-      await this.core.tree.root.addAccessPackage(generatedAccessPackage?.accessPackageEncrypted)
+      await this.core.tree.root.addAccessPackage(generatedAccessPackageEncrypted)
       this.initStep = InitSteps.ONBOARDING
       await this.onboard(this.core.tree.root._hash, "")
       this.initStep = InitSteps.COMPLETED
     } else {
       await this.core.tree.root.syncLocalRootHash()
       await this.core.modules.encryption?.setAccessPackage(this.core.tree.root)
-      this.initStep = InitSteps.COMPLETED
     }
 
     this.info.pdosRoot = this.core.tree.root._hash

@@ -44,7 +44,7 @@ interface Context {
 }
 
 interface CoreConfig {
-  env: 'production' | 'development' | 'test' | 'sepolia';
+  env: 'marigold';
   context: Context;
   test?: TestConfiguration;
   modules?: any;
@@ -98,7 +98,7 @@ export class Core {
     private validateConfig(config: CoreConfig){
 
       // Check the env that is requested is available
-      const acceptedEnvs = ['production', 'development', 'test', 'sepolia'];
+      const acceptedEnvs = ['marigold'];
       if (config.env && !acceptedEnvs.includes(config.env)){
         throw new ConfigValidationError("Invalid environment given."); 
       }
