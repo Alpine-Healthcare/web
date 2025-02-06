@@ -3,7 +3,7 @@
   "private": true,
   "main": "main.js",
   "dependencies": {
-    "@alpinehealthcare/pdos": "file:.yalc/@alpinehealthcare/pdos",
+    "@alpinehealthcare/pdos": "https://github.com/Alpine-Healthcare/pdos#ac7402c46dbc7aeb6ff6dc49c3b9d9858b6dc9e",
     "@coinbase/wallet-sdk": "^4.2.4",
     "@privy-io/react-auth": "^2.2.1",
     "@react-sigma/core": "^4.0.2",
