@@ -1,14 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const jsx_runtime_1 = require("react/jsx-runtime");
-const core_1 = require("@react-sigma/core");
-const react_1 = require("react");
-const bs_1 = require("react-icons/bs");
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useSigma } from "@react-sigma/core";
+import { useEffect, useState } from "react";
+import { BsSearch } from "react-icons/bs";
 const SearchField = ({ filters, placeholder }) => {
-    const sigma = (0, core_1.useSigma)();
-    const [search, setSearch] = (0, react_1.useState)("");
-    const [values, setValues] = (0, react_1.useState)([]);
-    const [selected, setSelected] = (0, react_1.useState)(null);
+    const sigma = useSigma();
+    const [search, setSearch] = useState("");
+    const [values, setValues] = useState([]);
+    const [selected, setSelected] = useState(null);
     const refreshValues = () => {
         const newValues = [];
         const lcSearch = search.toLowerCase();
@@ -20,17 +18,17 @@ const SearchField = ({ filters, placeholder }) => {
         }
         setValues(newValues);
     };
-    (0, react_1.useEffect)(() => refreshValues(), [search]);
-    (0, react_1.useEffect)(() => {
+    useEffect(() => refreshValues(), [search]);
+    useEffect(() => {
         requestAnimationFrame(refreshValues);
     }, [filters]);
-    (0, react_1.useEffect)(() => {
+    useEffect(() => {
         if (!selected)
             return;
         sigma.getGraph().setNodeAttribute(selected, "highlighted", true);
         const nodeDisplayData = sigma.getNodeDisplayData(selected);
         if (nodeDisplayData)
-            sigma.getCamera().animate(Object.assign(Object.assign({}, nodeDisplayData), { ratio: 0.05 }), {
+            sigma.getCamera().animate({ ...nodeDisplayData, ratio: 0.05 }, {
                 duration: 600,
             });
         return () => {
@@ -56,7 +54,7 @@ const SearchField = ({ filters, placeholder }) => {
             setSelected(values[0].id);
         }
     };
-    return ((0, jsx_runtime_1.jsxs)("div", { className: "search-wrapper", children: [(0, jsx_runtime_1.jsx)("input", { type: "search", placeholder: placeholder ? placeholder : "Search in nodes", list: "nodes", value: search, onChange: onInputChange, onKeyPress: onKeyPress }), (0, jsx_runtime_1.jsx)(bs_1.BsSearch, { className: "icon" }), (0, jsx_runtime_1.jsx)("datalist", { id: "nodes", children: values.map((value) => ((0, jsx_runtime_1.jsx)("option", { value: value.label, children: value.label }, value.id))) })] }));
+    return (_jsxs("div", { className: "search-wrapper", children: [_jsx("input", { type: "search", placeholder: placeholder ? placeholder : "Search in nodes", list: "nodes", value: search, onChange: onInputChange, onKeyPress: onKeyPress }), _jsx(BsSearch, { className: "icon" }), _jsx("datalist", { id: "nodes", children: values.map((value) => (_jsx("option", { value: value.label, children: value.label }, value.id))) })] }));
 };
-exports.default = SearchField;
+export default SearchField;
 //# sourceMappingURL=SearchField.js.map

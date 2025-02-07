@@ -17,8 +17,7 @@ import GraphEventsController from "./GraphEventsController";
 import Mountains from "../images/mountains.webp";
 import Logo from "../images/logo.png";
 
-// @ts-ignore 
-import pdos from "@alpinehealthcare/pdos";
+import { pdos } from "@alpinehealthcare/pdos";
 
 
 

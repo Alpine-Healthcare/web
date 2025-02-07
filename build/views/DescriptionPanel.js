@@ -1,11 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = require("tslib");
-const jsx_runtime_1 = require("react/jsx-runtime");
-const bs_1 = require("react-icons/bs");
-const Panel_1 = tslib_1.__importDefault(require("./Panel"));
+import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
+import { BsInfoCircle } from "react-icons/bs";
+import Panel from "./Panel";
 const DescriptionPanel = () => {
-    return ((0, jsx_runtime_1.jsx)(Panel_1.default, { initiallyDeployed: true, title: (0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(bs_1.BsInfoCircle, { className: "text-muted" }), " Description"] }), children: (0, jsx_runtime_1.jsx)("p", { children: "This map represents the directed acyclic graph that powers your account on PDOS." }) }));
+    return (_jsx(Panel, { initiallyDeployed: true, title: _jsxs(_Fragment, { children: [_jsx(BsInfoCircle, { className: "text-muted" }), " Description"] }), children: _jsx("p", { children: "This map represents the directed acyclic graph that powers your account on PDOS." }) }));
 };
-exports.default = DescriptionPanel;
+export default DescriptionPanel;
 //# sourceMappingURL=DescriptionPanel.js.map

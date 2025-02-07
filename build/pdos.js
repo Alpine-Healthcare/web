@@ -1,23 +1,19 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTreeGraphSnapshot = exports.drawGraph2 = exports.drawGraph = exports.createNode = exports.startPDOS = exports.TAGS = exports.CLUSTERS = void 0;
-const tslib_1 = require("tslib");
-const pdos_1 = tslib_1.__importStar(require("@alpinehealthcare/pdos"));
-exports.CLUSTERS = [
+import { pdos, Core } from "@alpinehealthcare/pdos";
+export const CLUSTERS = [
     { "key": "0", "color": "#6c3e81", "clusterLabel": "Treatments" },
     { "key": "1", "color": "#666666", "clusterLabel": "Access" },
     { "key": "2", "color": "#666666", "clusterLabel": "Data" }
 ];
-exports.TAGS = [
+export const TAGS = [
     { "key": "Treatment", "image": "method.svg" },
     { "key": "Access", "image": "person.svg" },
     { "key": "Data", "image": "tool.svg" }
 ];
-const startPDOS = () => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
-    new pdos_1.Core({
+export const startPDOS = async () => {
+    new Core({
         env: "marigold",
         context: {
-            gatewayURL: process.env.ALPINE_GATEWAY_URL,
+            gatewayURL: process.env.ALPINE_GATEWAY_URL ?? "",
         },
         modules: {
             auth: {},
@@ -27,10 +23,9 @@ const startPDOS = () => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
             storage: {}
         }
     });
-    yield (0, pdos_1.default)().start();
-});
-exports.startPDOS = startPDOS;
-const createNode = (node, x = 0, y = 0) => {
+    await pdos().start();
+};
+export const createNode = (node, x = 0, y = 0) => {
     let nodeType = node._nodeType;
     if (nodeType.includes("TreatmentBinary")) {
         nodeType = nodeType + node._hash;
@@ -47,9 +42,8 @@ const createNode = (node, x = 0, y = 0) => {
         y
     };
 };
-exports.createNode = createNode;
 const usedLocations = {};
-const drawGraph = (root) => {
+export const drawGraph = (root) => {
     const nodes = [];
     const edges = [];
     const cycleThroughTree = (node, x, y) => {
@@ -60,7 +54,7 @@ const drawGraph = (root) => {
         if (!node) {
             return;
         }
-        nodes.push((0, exports.createNode)(node, x, y));
+        nodes.push(createNode(node, x, y));
         usedLocations[x] = true;
         usedLocations[y] = true;
         const children = node.getChildren();
@@ -85,8 +79,7 @@ const drawGraph = (root) => {
         edges
     };
 };
-exports.drawGraph = drawGraph;
-const drawGraph2 = (root) => {
+export const drawGraph2 = (root) => {
     const nodes = [];
     const edges = [];
     const calculateSubtreeSizes = (node) => {
@@ -97,7 +90,7 @@ const drawGraph2 = (root) => {
         return children.reduce((sum, child) => sum + calculateSubtreeSizes(child), 0);
     };
     const layoutTree = (node, x, y, offset) => {
-        nodes.push((0, exports.createNode)(node, x, y));
+        nodes.push(createNode(node, x, y));
         const children = node.getChildren();
         const nodeType = node._nodeType.includes("TreatmentBinary")
             ? node._nodeType + node._hash
@@ -123,11 +116,9 @@ const drawGraph2 = (root) => {
         edges,
     };
 };
-exports.drawGraph2 = drawGraph2;
-const getTreeGraphSnapshot = () => {
-    const root = (0, pdos_1.default)().tree.userAccount;
-    const graph = (0, exports.drawGraph2)(root);
+export const getTreeGraphSnapshot = () => {
+    const root = pdos().tree.userAccount;
+    const graph = drawGraph2(root);
     return graph;
 };
-exports.getTreeGraphSnapshot = getTreeGraphSnapshot;
 //# sourceMappingURL=pdos.js.map

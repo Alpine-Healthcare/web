@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sdk = void 0;
-const wallet_sdk_1 = require("@coinbase/wallet-sdk");
-exports.sdk = (0, wallet_sdk_1.createCoinbaseWalletSDK)({
+import { createCoinbaseWalletSDK } from '@coinbase/wallet-sdk';
+export const sdk = createCoinbaseWalletSDK({
     appName: "Alpine Healthcare",
     appLogoUrl: "https://alpine.healthcare/favicon.ico",
     appChainIds: [84532],

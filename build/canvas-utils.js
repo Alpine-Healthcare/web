@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.drawLabel = exports.drawHover = exports.drawRoundRect = void 0;
 const TEXT_COLOR = "#000000";
-function drawRoundRect(ctx, x, y, width, height, radius) {
+export function drawRoundRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
     ctx.lineTo(x + width - radius, y);
@@ -15,8 +12,7 @@ function drawRoundRect(ctx, x, y, width, height, radius) {
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
 }
-exports.drawRoundRect = drawRoundRect;
-function drawHover(context, data, settings) {
+export function drawHover(context, data, settings) {
     const size = settings.labelSize;
     const font = settings.labelFont;
     const weight = settings.labelWeight;
@@ -61,8 +57,7 @@ function drawHover(context, data, settings) {
     context.font = `${weight} ${subLabelSize}px ${font}`;
     context.fillText(clusterLabel, data.x + data.size + 3, data.y + size / 3 + 3 + subLabelSize);
 }
-exports.drawHover = drawHover;
-function drawLabel(context, data, settings) {
+export function drawLabel(context, data, settings) {
     if (!data.label)
         return;
     const size = settings.labelSize, font = settings.labelFont, weight = settings.labelWeight;
@@ -73,5 +68,4 @@ function drawLabel(context, data, settings) {
     context.fillStyle = "#000";
     context.fillText(data.label, data.x + data.size + 3, data.y + size / 3);
 }
-exports.drawLabel = drawLabel;
 //# sourceMappingURL=canvas-utils.js.map

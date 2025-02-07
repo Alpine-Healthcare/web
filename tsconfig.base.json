@@ -23,7 +23,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "listEmittedFiles": false,
     "listFiles": false,
-    "module": "commonjs",
+    "module": "ESNext",
     "moduleResolution": "node",
     "noEmit": false,
     "noEmitHelpers": false,
@@ -53,6 +53,6 @@
     "stripInternal": true,
     "suppressExcessPropertyErrors": false,
     "suppressImplicitAnyIndexErrors": false,
-    "target": "es6"
+    "target": "esnext"
   }
 }

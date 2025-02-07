@@ -1,6 +1,5 @@
 
-// @ts-ignore 
-import pdos, { Core } from "@alpinehealthcare/pdos";
+import { pdos, Core } from "@alpinehealthcare/pdos";
 
 export const CLUSTERS =  [
   { "key": "0", "color": "#6c3e81", "clusterLabel": "Treatments" },
@@ -36,7 +35,7 @@ export const startPDOS = async () => {
   new Core({
     env: "marigold",
     context: {
-      gatewayURL: process.env.ALPINE_GATEWAY_URL,
+      gatewayURL: process.env.ALPINE_GATEWAY_URL ?? "",
     },
     modules: {
       auth: {},
@@ -187,7 +186,7 @@ export const drawGraph2 = (root: any) => {
 
 
 export const getTreeGraphSnapshot = () => {
-    const root = pdos().tree.userAccount
+    const root = pdos().tree.root
     const graph = drawGraph2(root)
     return graph
 }

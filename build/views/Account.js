@@ -1,58 +1,52 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = require("tslib");
-const jsx_runtime_1 = require("react/jsx-runtime");
-const react_1 = require("react");
-const mobx_react_lite_1 = require("mobx-react-lite");
-const react_auth_1 = require("@privy-io/react-auth");
-const react_auth_2 = require("@privy-io/react-auth");
-const pdos_1 = tslib_1.__importStar(require("@alpinehealthcare/pdos"));
-require("./Account.css");
-exports.default = (0, mobx_react_lite_1.observer)(function App({ switchView }) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
-    const [newPDOSRoot, setNewPDOSRoot] = (0, react_1.useState)('');
-    const [newComputeNodeHash, setNewComputeNodeHash] = (0, react_1.useState)('');
-    const { ready: walletReady, wallets } = (0, react_auth_2.useWallets)();
-    const { ready, authenticated, logout, login } = (0, react_auth_1.usePrivy)();
-    (0, react_1.useEffect)(() => {
-        const getWallet = () => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
-            if (wallets.length > 0 && authenticated && !((_a = (0, pdos_1.default)().modules) === null || _a === void 0 ? void 0 : _a.auth.info.isAuthenticated) && (0, pdos_1.default)().started) {
-                const ethProvider = yield wallets[0].getEthereumProvider();
-                (_b = (0, pdos_1.default)().modules) === null || _b === void 0 ? void 0 : _b.auth.initializeWalletUser(ethProvider);
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { usePrivy } from '@privy-io/react-auth';
+import { useWallets } from '@privy-io/react-auth';
+import { pdos, actions } from "@alpinehealthcare/pdos";
+import './Account.css';
+export default observer(function App({ switchView }) {
+    const [newPDOSRoot, setNewPDOSRoot] = useState('');
+    const [newComputeNodeHash, setNewComputeNodeHash] = useState('');
+    const { ready: walletReady, wallets } = useWallets();
+    const { ready, authenticated, logout, login } = usePrivy();
+    useEffect(() => {
+        const getWallet = async () => {
+            if (wallets.length > 0 && authenticated && !pdos()?.modules?.auth?.info.isAuthenticated && pdos().started) {
+                const ethProvider = await wallets[0].getEthereumProvider();
+                pdos().modules?.auth?.initializeWalletUser(ethProvider);
             }
-        });
+        };
         getWallet();
-    }, [walletReady, wallets, authenticated, (0, pdos_1.default)().started]);
-    if (!(0, pdos_1.default)().started) {
+    }, [walletReady, wallets, authenticated, pdos().started]);
+    if (!pdos().started) {
         return null;
     }
     const disableLogin = !ready || (ready && authenticated);
-    if (!((_a = (0, pdos_1.default)().modules) === null || _a === void 0 ? void 0 : _a.auth.info.isAuthenticated)) {
-        return ((0, jsx_runtime_1.jsx)("div", { style: {
+    if (!pdos().modules?.auth?.info.isAuthenticated) {
+        return (_jsx("div", { style: {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
                 height: '100vh',
-            }, children: (0, jsx_runtime_1.jsx)("button", { className: "moving-color-button", disabled: disableLogin, onClick: login, children: "Connect" }) }));
+            }, children: _jsx("button", { className: "moving-color-button", disabled: disableLogin, onClick: login, children: "Connect" }) }));
     }
-    if (((_b = (0, pdos_1.default)().modules) === null || _b === void 0 ? void 0 : _b.auth.initStep) && ((_c = (0, pdos_1.default)().modules) === null || _c === void 0 ? void 0 : _c.auth.initStep) !== 'Completed') {
-        return ((0, jsx_runtime_1.jsx)("div", { style: {
+    if (pdos().modules?.auth?.initStep && pdos().modules?.auth?.initStep !== 'Completed') {
+        return (_jsx("div", { style: {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-start',
                 marginTop: '100px',
                 alignItems: 'center',
                 height: '100vh',
-            }, children: (0, jsx_runtime_1.jsx)("button", { className: "moving-color-button", disabled: true, onClick: login, style: { width: "300px", height: "50px" }, children: (_d = (0, pdos_1.default)().modules) === null || _d === void 0 ? void 0 : _d.auth.initStep }) }));
+            }, children: _jsx("button", { className: "moving-color-button", disabled: true, onClick: login, style: { width: "300px", height: "50px" }, children: pdos().modules?.auth?.initStep }) }));
     }
-    return ((0, jsx_runtime_1.jsxs)("div", { className: "container", children: [((_e = (0, pdos_1.default)().modules) === null || _e === void 0 ? void 0 : _e.auth.info.isAuthenticated) && ready && ((0, jsx_runtime_1.jsxs)("div", { children: [(0, jsx_runtime_1.jsx)("button", { style: { marginBottom: '20px' }, onClick: () => tslib_1.__awaiter(this, void 0, void 0, function* () {
-                            var _l;
+    return (_jsxs("div", { className: "container", children: [pdos().modules?.auth?.info.isAuthenticated && ready && (_jsxs("div", { children: [_jsx("button", { style: { marginBottom: '20px' }, onClick: async () => {
                             logout();
-                            yield ((_l = (0, pdos_1.default)().modules) === null || _l === void 0 ? void 0 : _l.auth.disconnectWalletUser());
-                        }), className: "button button-red", children: "Disconnect" }), (0, jsx_runtime_1.jsx)("button", { style: { marginLeft: '10px', marginBottom: '20px' }, onClick: () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                            await pdos().modules?.auth?.disconnectWalletUser();
+                        }, className: "button button-red", children: "Disconnect" }), _jsx("button", { style: { marginLeft: '10px', marginBottom: '20px' }, onClick: async () => {
                             switchView();
-                        }), className: "button button-red", children: "View PDOS Tree" })] })), ((_f = (0, pdos_1.default)().modules) === null || _f === void 0 ? void 0 : _f.auth.info.isAuthenticated) && ((0, jsx_runtime_1.jsxs)("div", { className: "content", children: [(0, jsx_runtime_1.jsxs)("div", { className: "card", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Alpine Contract Details" }), (0, jsx_runtime_1.jsxs)("p", { children: [(0, jsx_runtime_1.jsx)("strong", { children: "Connected:" }), " ", (_g = (0, pdos_1.default)().modules) === null || _g === void 0 ? void 0 : _g.auth.publicKey] }), (0, jsx_runtime_1.jsxs)("p", { children: [(0, jsx_runtime_1.jsx)("strong", { children: "Active:" }), " ", JSON.stringify((_h = (0, pdos_1.default)().modules) === null || _h === void 0 ? void 0 : _h.auth.info.isActive)] }), (0, jsx_runtime_1.jsxs)("p", { children: [(0, jsx_runtime_1.jsx)("strong", { children: "PDOS Root Hash:" }), " ", (_j = (0, pdos_1.default)().modules) === null || _j === void 0 ? void 0 : _j.auth.info.pdosRoot] }), (0, jsx_runtime_1.jsxs)("p", { children: [(0, jsx_runtime_1.jsx)("strong", { children: "Compute Node Address:" }), " ", (_k = (0, pdos_1.default)().modules) === null || _k === void 0 ? void 0 : _k.auth.info.computeNodeAddress] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "card", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Alpine Contract Updates" }), (0, jsx_runtime_1.jsxs)("div", { style: { display: 'flex', flexDirection: "row", gap: '10px' }, children: [(0, jsx_runtime_1.jsx)("input", { className: "input", placeholder: "New PDOS Root", value: newPDOSRoot, onChange: (e) => setNewPDOSRoot(e.target.value) }), (0, jsx_runtime_1.jsx)("button", { onClick: () => { var _a; return (_a = (0, pdos_1.default)().modules) === null || _a === void 0 ? void 0 : _a.auth.updatePDOSRoot(newPDOSRoot); }, className: "button button-blue", children: "Update" })] }), (0, jsx_runtime_1.jsxs)("div", { style: { display: 'flex', flexDirection: "row", gap: '10px' }, children: [(0, jsx_runtime_1.jsx)("input", { className: "input", placeholder: "New Compute Node Hash", value: newComputeNodeHash, onChange: (e) => setNewComputeNodeHash(e.target.value) }), (0, jsx_runtime_1.jsx)("button", { onClick: () => { var _a; return (_a = (0, pdos_1.default)().modules) === null || _a === void 0 ? void 0 : _a.auth.addComputeNodeAccessForUser(newComputeNodeHash); }, className: "button button-blue", children: "Update " })] }), (0, jsx_runtime_1.jsx)("div", { style: { display: 'flex', flexDirection: "row", gap: '10px' }, children: (0, jsx_runtime_1.jsx)("button", { onClick: () => { var _a; return (_a = (0, pdos_1.default)().modules) === null || _a === void 0 ? void 0 : _a.auth.offboard(); }, className: "button button-blue", children: "Offboard User " }) })] }), (0, jsx_runtime_1.jsxs)("div", { className: "card", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Alpine Marketplace AI Health Agents" }), (0, jsx_runtime_1.jsx)("button", { onClick: () => tslib_1.__awaiter(this, void 0, void 0, function* () { return yield pdos_1.actions.treatments.addTreatment("Weight Watcher", "QmeFC86hWxLE2tC7riwZfe7T7B6mzRye6xR8hhXiAxmUAB", {}); }), className: "button button-purple", children: "Add Weight Watcher" })] }), (0, jsx_runtime_1.jsxs)("div", { className: "card", children: [(0, jsx_runtime_1.jsx)("h3", { children: "PDOS" }), (0, jsx_runtime_1.jsx)("button", { onClick: () => pdos_1.actions.data.sync(), className: "button button-yellow", children: "Sync Data" })] })] }))] }));
+                        }, className: "button button-red", children: "View PDOS Tree" })] })), pdos().modules?.auth?.info.isAuthenticated && (_jsxs("div", { className: "content", children: [_jsxs("div", { className: "card", children: [_jsx("h3", { children: "Alpine Contract Details" }), _jsxs("p", { children: [_jsx("strong", { children: "Connected:" }), " ", pdos().modules?.auth?.publicKey] }), _jsxs("p", { children: [_jsx("strong", { children: "Active:" }), " ", JSON.stringify(pdos().modules?.auth?.info.isActive)] }), _jsxs("p", { children: [_jsx("strong", { children: "PDOS Root Hash:" }), " ", pdos().modules?.auth?.info.pdosRoot] }), _jsxs("p", { children: [_jsx("strong", { children: "Compute Node Address:" }), " ", pdos().modules?.auth?.info.computeNodeAddress] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Alpine Contract Updates" }), _jsxs("div", { style: { display: 'flex', flexDirection: "row", gap: '10px' }, children: [_jsx("input", { className: "input", placeholder: "New PDOS Root", value: newPDOSRoot, onChange: (e) => setNewPDOSRoot(e.target.value) }), _jsx("button", { onClick: () => pdos().modules?.auth?.updatePDOSRoot(newPDOSRoot), className: "button button-blue", children: "Update" })] }), _jsxs("div", { style: { display: 'flex', flexDirection: "row", gap: '10px' }, children: [_jsx("input", { className: "input", placeholder: "New Compute Node Hash", value: newComputeNodeHash, onChange: (e) => setNewComputeNodeHash(e.target.value) }), _jsx("button", { onClick: () => pdos().modules?.auth?.addComputeNodeAccessForUser(newComputeNodeHash), className: "button button-blue", children: "Update " })] }), _jsx("div", { style: { display: 'flex', flexDirection: "row", gap: '10px' }, children: _jsx("button", { onClick: () => pdos().modules?.auth?.offboard(), className: "button button-blue", children: "Offboard User " }) })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Alpine Marketplace AI Health Agents" }), _jsx("button", { onClick: async () => await actions.treatments.addTreatment("Weight Watcher", "QmeFC86hWxLE2tC7riwZfe7T7B6mzRye6xR8hhXiAxmUAB", {}), className: "button button-purple", children: "Add Weight Watcher" })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "PDOS" }), _jsx("button", { onClick: () => actions.data.sync(), className: "button button-yellow", children: "Sync Data" })] })] }))] }));
 });
 //# sourceMappingURL=Account.js.map

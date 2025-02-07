@@ -15,12 +15,6 @@ export default defineConfig(({mode}) => {
     },
     plugins: [
       react(),
-      viteTsconfigPaths(),
-      checker({
-        typescript: {
-          buildMode: true,
-        },
-      }),
     ],
     server: {
       open: false,

@@ -3,8 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { usePrivy } from '@privy-io/react-auth';
 import { useWallets } from '@privy-io/react-auth';
 
-// @ts-ignore
-import pdos, { actions } from "@alpinehealthcare/pdos";
+import { pdos, actions } from "@alpinehealthcare/pdos";
 import './Account.css';
 
 export default observer(function App({ switchView }: { switchView: () => void }) {
@@ -16,9 +15,9 @@ export default observer(function App({ switchView }: { switchView: () => void })
     useEffect(() => {
 
         const getWallet = async () => {
-            if (wallets.length > 0 && authenticated && !pdos().modules?.auth.info.isAuthenticated && pdos().started) {
+            if (wallets.length > 0 && authenticated && !pdos()?.modules?.auth?.info.isAuthenticated && pdos().started) {
                 const ethProvider = await wallets[0].getEthereumProvider()
-                pdos().modules?.auth.initializeWalletUser(ethProvider);
+                pdos().modules?.auth?.initializeWalletUser(ethProvider);
             }
         }
 
@@ -31,7 +30,7 @@ export default observer(function App({ switchView }: { switchView: () => void })
 
     const disableLogin = !ready || (ready && authenticated);
 
-    if (!pdos().modules?.auth.info.isAuthenticated) {
+    if (!pdos().modules?.auth?.info.isAuthenticated) {
         return (
             <div style={{
                 display: 'flex',
@@ -48,7 +47,7 @@ export default observer(function App({ switchView }: { switchView: () => void })
         )
     }
 
-    if (pdos().modules?.auth.initStep && pdos().modules?.auth.initStep !== 'Completed') {
+    if (pdos().modules?.auth?.initStep && pdos().modules?.auth?.initStep !== 'Completed') {
         return (
             <div style={{
                 display: 'flex',
@@ -59,7 +58,7 @@ export default observer(function App({ switchView }: { switchView: () => void })
                 height: '100vh',
             }}>
                 <button className="moving-color-button" disabled={true} onClick={login} style={{ width: "300px", height: "50px"}}>
-                    {pdos().modules?.auth.initStep}
+                    {pdos().modules?.auth?.initStep}
                 </button>
 
             </div>
@@ -69,25 +68,25 @@ export default observer(function App({ switchView }: { switchView: () => void })
 
     return (
         <div className="container">
-            {pdos().modules?.auth.info.isAuthenticated && ready && (
+            {pdos().modules?.auth?.info.isAuthenticated && ready && (
                 <div>
                 <button style={{ marginBottom: '20px'}} onClick={async () => {
                     logout()
-                    await pdos().modules?.auth.disconnectWalletUser()
+                    await pdos().modules?.auth?.disconnectWalletUser()
                 }} className="button button-red">Disconnect</button>
                 <button style={{ marginLeft:'10px', marginBottom: '20px'}} onClick={async () => {
                     switchView()
                 }} className="button button-red">View PDOS Tree</button>
                 </div>
             )}
-            {pdos().modules?.auth.info.isAuthenticated && (
+            {pdos().modules?.auth?.info.isAuthenticated && (
                 <div className="content">
                     <div className="card">
                         <h3>Alpine Contract Details</h3>
-                        <p><strong>Connected:</strong> {pdos().modules?.auth.publicKey}</p>
-                        <p><strong>Active:</strong> {JSON.stringify(pdos().modules?.auth.info.isActive)}</p>
-                        <p><strong>PDOS Root Hash:</strong> {pdos().modules?.auth.info.pdosRoot}</p>
-                        <p><strong>Compute Node Address:</strong> {pdos().modules?.auth.info.computeNodeAddress}</p>
+                        <p><strong>Connected:</strong> {pdos().modules?.auth?.publicKey}</p>
+                        <p><strong>Active:</strong> {JSON.stringify(pdos().modules?.auth?.info.isActive)}</p>
+                        <p><strong>PDOS Root Hash:</strong> {pdos().modules?.auth?.info.pdosRoot}</p>
+                        <p><strong>Compute Node Address:</strong> {pdos().modules?.auth?.info.computeNodeAddress}</p>
                     </div>
                     {/*<div className="card">
                         <h3>Alpine Contract Actions</h3>
@@ -97,14 +96,14 @@ export default observer(function App({ switchView }: { switchView: () => void })
                         <h3>Alpine Contract Updates</h3>
                         <div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
                             <input className="input" placeholder="New PDOS Root" value={newPDOSRoot} onChange={(e) => setNewPDOSRoot(e.target.value)} />
-                            <button onClick={() => pdos().modules?.auth.updatePDOSRoot(newPDOSRoot)} className="button button-blue">Update</button>
+                            <button onClick={() => pdos().modules?.auth?.updatePDOSRoot(newPDOSRoot)} className="button button-blue">Update</button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
                         <input className="input" placeholder="New Compute Node Hash" value={newComputeNodeHash} onChange={(e) => setNewComputeNodeHash(e.target.value)} />
-                        <button onClick={() => pdos().modules?.auth.addComputeNodeAccessForUser(newComputeNodeHash)} className="button button-blue">Update </button>
+                        <button onClick={() => pdos().modules?.auth?.addComputeNodeAccessForUser(newComputeNodeHash)} className="button button-blue">Update </button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
-                        <button onClick={() => pdos().modules?.auth.offboard()} className="button button-blue">Offboard User </button>
+                        <button onClick={() => pdos().modules?.auth?.offboard()} className="button button-blue">Offboard User </button>
                         </div>
                         {/*<div style={{ display: 'flex', flexDirection: "row", gap: '10px'}}>
                         <input className="input" placeholder="Onboard" value={newOnboard} onChange={(e) => setNewOnboard(e.target.value)} />

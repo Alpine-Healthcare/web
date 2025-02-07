@@ -3,13 +3,21 @@
   "version": "0.0.62",
   "license": "MIT",
   "outputPath": "dist",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.es.js",
+  "browser": "dist/index.umd.js",
+  "react-native": "dist/index.es.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "import": "./dist/pdos.mjs",
-      "require": "./dist/pdos.umd.js"
-    }
+    "import": "./dist/index.es.js",
+    "require": "./dist/index.cjs",
+    "browser": "./dist/index.umd.js",
+    "react-native": "./dist/index.es.js"
   },
-  "type": "commonjs",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "watch": "tsc -w",
     "build": "tsc && vite build",
@@ -29,5 +37,5 @@
     "react-dom": "18.2.0"
   },
   "private": false,
-  "yalcSig": "766abb1a944caad623a259c027323ab7"
+  "yalcSig": "af27522ab8a58bf401fea90f612d8080"
 }
