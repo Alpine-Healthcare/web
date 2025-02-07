@@ -26,7 +26,7 @@ export default class Inbox extends PDFSNode {
       await this.update({
         ...this._rawNode,
         "unread_messages": newMessages 
-      })
+      }, true)
     } catch (e) {
       console.log("error: ", e)
     }
@@ -37,7 +37,7 @@ export default class Inbox extends PDFSNode {
       await this.update({
         ...this._rawNode,
         "unread_messages": [] 
-      })
+      }, true)
     } catch (e) {
       console.log("error: ", JSON.stringify(e))
     }

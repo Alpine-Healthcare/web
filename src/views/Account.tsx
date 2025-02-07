@@ -31,7 +31,7 @@ export default observer(function App({ switchView }: { switchView: () => void })
 
     const disableLogin = !ready || (ready && authenticated);
 
-    if (!pdos().modules?.auth.info.isAuthenticated && ready && !authenticated) {
+    if (!pdos().modules?.auth.info.isAuthenticated) {
         return (
             <div style={{
                 display: 'flex',

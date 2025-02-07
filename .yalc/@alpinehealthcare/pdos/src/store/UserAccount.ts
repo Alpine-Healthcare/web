@@ -29,12 +29,7 @@ export default class UserAccount extends PDFSNode {
 
   public async syncLocalRootHash(addressToUpdate?: string){
     if (this.core.modules.auth?.authType === AuthType.WALLET) {
-      let hashId
-      try{
-        hashId = await this.core.modules.auth?.getPDOSRoot(addressToUpdate) 
-      }catch (e) {
-
-      }
+      const hashId = await this.core.modules.auth?.getPDOSRoot(addressToUpdate) 
       if (this._hash !== hashId) {
         await this.core.modules.auth.updatePDOSRoot(this._hash, addressToUpdate ?? this.core.modules.auth.publicKey )
         console.log("# pdos : synced new root - " + this._hash)

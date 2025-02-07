@@ -83,16 +83,24 @@ export interface AccessPackageEncrypted {
   dataToEncryptHash: string
 }
 
+interface EncryptionConfig {
+  enabled?: boolean
+}
+
 export default class Encryption extends Module {
   private litNodeClient: LitJsSdk.LitNodeClient | undefined
   private accessPackage: AccessPackage | undefined
   private accessPackageEncrypted: AccessPackageEncrypted | undefined
 
-  constructor(core : Core, private config : null) {
+  constructor(core : Core, private config : EncryptionConfig) {
     super(core);
   }
 
   protected async start() {
+    if (!this.config.enabled) {
+      return
+    }
+
     this.litNodeClient = new LitJsSdk.LitNodeClient({
         litNetwork: LIT_NETWORK.DatilTest,
       });
@@ -101,6 +109,9 @@ export default class Encryption extends Module {
   }
 
   public async generateAccessPackage(): Promise<AccessPackageEncrypted | undefined> {
+    if (!this.config.enabled) {
+      return { ciphertext: "", dataToEncryptHash: "" }
+    }
 
     const iv = getRandomBytesSync(16);
     const datakey = getRandomBytesSync(32);
@@ -124,6 +135,10 @@ export default class Encryption extends Module {
   }
 
   public async setAccessPackage(root: PDFSNode) {
+    if (!this.config.enabled) {
+      return
+    }
+
     this.accessPackageEncrypted = root._rawNode.access_package
 
     if (!this.accessPackageEncrypted) {
@@ -147,8 +162,11 @@ export default class Encryption extends Module {
   }
 
   public async encryptNode(data: string | object) {
-
     const dataParsed = typeof data === "string" ? data : JSON.stringify(data)
+
+    if (!this.accessPackage) {
+      return dataParsed
+    }
 
     if (!this.accessPackage) {
       throw new Error("Access package not found, abandoning!")
@@ -163,6 +181,9 @@ export default class Encryption extends Module {
   }
   
   public async decryptNode(encryptedData: string) {
+    if (!this.accessPackage) {
+      return JSON.parse(encryptedData)
+    }
     if (!this.accessPackage) {
       return
     }

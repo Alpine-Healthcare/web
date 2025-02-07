@@ -40,7 +40,9 @@ export const startPDOS = async () => {
     },
     modules: {
       auth: {},
-      encryption: {},
+      encryption: {
+        enabled: false
+      },
       storage: {}
     }
   });

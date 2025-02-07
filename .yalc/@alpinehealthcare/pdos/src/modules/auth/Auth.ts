@@ -1,14 +1,8 @@
 
 import Module from "../Module";
 import { Core } from "../..";
-import axios from "axios";
-import { ethers, Wallet } from "ethers";
+import { ethers, } from "ethers";
 import { makeObservable, observable } from "mobx";
-
-import * as aes from "ethereum-cryptography/aes.js";
-import { bytesToUtf8, hexToBytes, utf8ToBytes } from "ethereum-cryptography/utils.js";
-import { getRandomBytes } from 'ethereum-cryptography/random';
-import { base64ToUint8Array, importAddressAsHmacKey, importIvAsKey, publicKeyToHex, uint8ArrayToBase64, wrapIv } from "../../utils/crypto";
 
 export enum AuthType {
   WALLET,
@@ -28,11 +22,6 @@ interface AuthInfo {
   isActive: boolean
   pdosRoot: string | undefined
   computeNodeAddress: string | undefined
-}
-
-interface EncryptionScheme {
-  iv: string,
-  dataKey: string,
 }
 
 interface Config {
@@ -83,8 +72,8 @@ export default class Auth extends Module {
     const address = wallet.address
     if (address) {
       this.publicKey = address
-      console.log("address: ", address)
     }
+    await this.initInfoForWalletUser()
   }
 
   public async initializeWalletUser(eip1193Provider?: ethers.Eip1193Provider) {
@@ -121,6 +110,7 @@ export default class Auth extends Module {
 
   public async initInfoForWalletUser() {
     this.authType = AuthType.WALLET
+
     try {
       this.info.isActive = await this.checkIsActive()
       this.info.pdosRoot= await this.getPDOSRoot()
@@ -151,14 +141,13 @@ export default class Auth extends Module {
       } catch (e) {
         throw new Error("Failed onboarding user")
       }
-    } else {
-      this.initStep = InitSteps.COMPLETED
-    }
+    } 
 
     if (isNewUser) {
       this.initStep = InitSteps.INITIALIZING_PDOS
     }
     await this.core.tree.root.init(this.info.pdosRoot)
+    console.log("# pdos - initial root hash ", this.core.tree.root._hash)
 
     if (isNewUser) {
       await this.core.tree.root.addAccessPackage(generatedAccessPackageEncrypted)
@@ -174,6 +163,7 @@ export default class Auth extends Module {
     this.info.isAuthenticated = true
     this.info.computeNodeAddress = await this.getUserComputeNode()
     this.info.isActive = true
+    this.initStep = InitSteps.COMPLETED
   }
   
   public async getSigner() {
