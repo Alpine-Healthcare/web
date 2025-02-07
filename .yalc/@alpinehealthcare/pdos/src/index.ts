@@ -21,5 +21,14 @@ export const actions = {
   }
 }
 
+if (typeof window !== "undefined") {
+  (window as any).pdos_import = {
+    Core,
+    pdos
+  }
+} 
+
 export { Core, PDFSNode }
 export default pdos;
+
+

@@ -22,7 +22,7 @@ const startPDOS = () => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
         modules: {
             auth: {},
             encryption: {
-                enabled: false
+                enabled: true
             },
             storage: {}
         }
