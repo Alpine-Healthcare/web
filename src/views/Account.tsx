@@ -11,16 +11,24 @@ export default observer(function App({ switchView }: { switchView: () => void })
     const [newComputeNodeHash, setNewComputeNodeHash] = useState('');
     const { ready: walletReady, wallets } = useWallets();
     const { ready, authenticated, logout, login } = usePrivy();
+
+    const [ walletCheckHappened, setWalletCheckHappened ] = useState<boolean>(false)
         
     useEffect(() => {
+
+        if (!pdos().started) {
+            return
+        }
 
         const getWallet = async () => {
             if (wallets.length > 0 && authenticated && !pdos()?.modules?.auth?.info.isAuthenticated && pdos().started) {
                 const ethProvider = await wallets[0].getEthereumProvider()
                 pdos().modules?.auth?.initializeWalletUser(ethProvider);
             }
+            setWalletCheckHappened(false)
         }
 
+        setWalletCheckHappened(true)
         getWallet()
     }, [walletReady, wallets, authenticated, pdos().started]);
 
@@ -30,22 +38,6 @@ export default observer(function App({ switchView }: { switchView: () => void })
 
     const disableLogin = !ready || (ready && authenticated);
 
-    if (!pdos().modules?.auth?.info.isAuthenticated) {
-        return (
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh',
-            }}>
-                <button className="moving-color-button" disabled={disableLogin} onClick={login}>
-                    Connect
-                </button>
-
-            </div>
-        )
-    }
 
     if (pdos().modules?.auth?.initStep && pdos().modules?.auth?.initStep !== 'Completed') {
         return (
@@ -64,6 +56,22 @@ export default observer(function App({ switchView }: { switchView: () => void })
             </div>
         )
 
+    }
+
+    if (!pdos().modules?.auth?.info.isAuthenticated && !pdos().modules.auth?.initStarted && walletCheckHappened) {
+        return (
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+            }}>
+                <button className="moving-color-button" disabled={disableLogin} onClick={login}>
+                    Connect
+                </button>
+            </div>
+        )
     }
 
     return (
